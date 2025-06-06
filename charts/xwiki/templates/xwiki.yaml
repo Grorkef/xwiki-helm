@@ -39,7 +39,7 @@ spec:
         command:
           - sh
           - -c
-          - |
+          - |-
             set -e
             apt-get update && \
             apt-get install -y --no-install-recommends curl ca-certificates openssl && \
@@ -61,7 +61,6 @@ spec:
             echo "Importing into Java truststore..." && \
             for crt in /usr/local/share/ca-certificates/custom/*.crt; do \
             aliasname=$(basename $crt .crt); \
-            echo "Importing $aliasname into Java truststore..."; \
             keytool -importcert -trustcacerts -alias $aliasname \
             -file $crt -keystore $JAVA_HOME/lib/security/cacerts \
             -storepass changeit -noprompt; \

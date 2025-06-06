@@ -48,4 +48,51 @@ entries:
     urls:
     - https://github.com/Grorkef/xwiki-helm/releases/download/xwiki-1.5.4/xwiki-1.5.4.tgz
     version: 1.5.4
-generated: "2025-06-06T09:09:33.777007608Z"
+  - apiVersion: v2
+    created: "2025-06-06T09:18:16.590886299Z"
+    dependencies:
+    - name: common
+      repository: oci://registry-1.docker.io/bitnamicharts
+      tags:
+      - bitnami-common
+      version: 2.30.0
+    - condition: mysql.enabled
+      name: mysql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 12.3.2
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 20.4.2
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 16.5.6
+    description: XWiki is a free wiki software platform written in Java with a design
+      emphasis on extensibility. XWiki is an enterprise wiki. It includes WYSIWYG
+      editing, OpenDocument based document import/export, semantic annotations and
+      tagging, and advanced permissions management.
+    digest: 8d06507856cca5ff6e5642ef792b1afd2e76df636076c949a7f28825a74be409
+    home: http://xwiki.org
+    icon: https://www.xwiki.org/xwiki/bin/download/Main/Logo/logo-x.png
+    keywords:
+    - xwiki
+    maintainers:
+    - email: sharma.ashish960@gmail.com
+      name: Ashish Sharma
+    - email: ludovic@xwiki.com
+      name: Ludovic Dubost
+    - email: guilherme.sautner@xwiki.com
+      name: Guilherme Sautner
+    - email: arsene.fougerouse@xwiki.com
+      name: Arsène Fougerouse
+    - email: martin.moreira@xwiki.com
+      name: Martin Moreira de Jesus
+    name: xwiki
+    sources:
+    - https://github.com/xwiki-contrib/docker-xwiki
+    type: application
+    urls:
+    - https://github.com/Grorkef/xwiki-helm/releases/download/xwiki-1.5.3/xwiki-1.5.3.tgz
+    version: 1.5.3
+generated: "2025-06-06T09:18:16.590907549Z"

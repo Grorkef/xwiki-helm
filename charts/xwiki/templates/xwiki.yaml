@@ -40,7 +40,10 @@ spec:
       {{- end }}
         - name: import-ca
           image: openjdk:21-slim
-          command: ["sh","-c","set -e; apt-get update && apt-get install -y --no-install-recommends curl ca-certificates openssl && mkdir -p /usr/local/share/ca-certificates/custom && echo \"Downloading root CA ...\" && curl -fsSL \"http://pki.sunot.io/ejbca/publicweb/certificates/search.cgi?sHash=2hl0or%2B5jLH35/re3dA9NHS3h80\" -o /usr/local/share/ca-certificates/custom/root.sunot.io.der && openssl x509 -inform DER -in /usr/local/share/ca-certificates/custom/root.sunot.io.der -out /usr/local/share/ca-certificates/custom/root.sunot.io.crt && echo \"Downloading sub CA ...\" && curl -fsSL \"http://pki.sunot.io/ejbca/publicweb/certificates/search.cgi?sHash=gSt8ztDa%2BJ6FRhd4RzBPgVG4BZc\" -o /usr/local/share/ca-certificates/custom/sub.sunot.io.der && openssl x509 -inform DER -in /usr/local/share/ca-certificates/custom/sub.sunot.io.der -out /usr/local/share/ca-certificates/custom/sub.sunot.io.crt && rm /usr/local/share/ca-certificates/custom/*.der && update-ca-certificates && echo \"Importing into Java truststore ...\" && for crt in /usr/local/share/ca-certificates/custom/*.crt; do aliasname=$(basename \"$crt\" .crt); echo \" -> $aliasname\"; keytool -importcert -trustcacerts -alias \"$aliasname\" -file \"$crt\" -keystore \"$JAVA_HOME/lib/security/cacerts\" -storepass changeit -noprompt; done"]
+          volumeMounts:
+            - name: keystore
+              mountPath: /keystore
+          command: ["sh","-c","set -e; apt-get update && apt-get install -y --no-install-recommends curl ca-certificates openssl && cp $JAVA_HOME/lib/security/cacerts /keystore/cacerts && mkdir -p /usr/local/share/ca-certificates/custom && echo \"Downloading root CA ...\" && curl -fsSL \"http://pki.sunot.io/ejbca/publicweb/certificates/search.cgi?sHash=2hl0or%2B5jLH35/re3dA9NHS3h80\" -o /usr/local/share/ca-certificates/custom/root.sunot.io.der && openssl x509 -inform DER -in /usr/local/share/ca-certificates/custom/root.sunot.io.der -out /usr/local/share/ca-certificates/custom/root.sunot.io.crt && echo \"Downloading sub CA ...\" && curl -fsSL \"http://pki.sunot.io/ejbca/publicweb/certificates/search.cgi?sHash=gSt8ztDa%2BJ6FRhd4RzBPgVG4BZc\" -o /usr/local/share/ca-certificates/custom/sub.sunot.io.der && openssl x509 -inform DER -in /usr/local/share/ca-certificates/custom/sub.sunot.io.der -out /usr/local/share/ca-certificates/custom/sub.sunot.io.crt && rm /usr/local/share/ca-certificates/custom/*.der && update-ca-certificates && echo \"Importing into Java truststore ...\" && for crt in /usr/local/share/ca-certificates/custom/*.crt; do aliasname=$(basename \"$crt\" .crt); echo \" -> $aliasname\"; keytool -importcert -trustcacerts -alias \"$aliasname\" -file \"$crt\" -keystore /keystore/cacerts -storepass changeit -noprompt; done"]
       containers:
         - name: {{ .Chart.Name }}
           image: {{ include "xwiki.imageName" . }}
@@ -132,6 +135,9 @@ spec:
             - name: entrypoint
               mountPath: /entrypoint
               readOnly: true
+            - name: keystore
+              mountPath: /usr/local/openjdk-21/lib/security/cacerts
+              subPath: cacerts
             {{- if .Values.extraVolumeMounts }}
             {{- .Values.extraVolumeMounts | toYaml | nindent 12 }}
             {{- end }}
@@ -174,6 +180,8 @@ spec:
           emptyDir:
             sizeLimit: 1Mi
             medium: Memory
+        - name: keystore
+          emptyDir: {}
         - name: xwiki-data
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
           persistentVolumeClaim:

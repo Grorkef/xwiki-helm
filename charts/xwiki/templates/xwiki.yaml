@@ -34,6 +34,30 @@ spec:
     spec:
       serviceAccountName: {{ $fullName }}-sa
       initContainers:
+        import-ca:
+          image: openjdk:21-slim
+          command: [ "sh", "-c",
+            "apt-get update && \
+            apt-get install -y --no-install-recommends curl ca-certificates openssl && \
+            mkdir -p /usr/local/share/ca-certificates/custom && \
+            curl -fsSL 'http://pki.sunot.io/ejbca/publicweb/certificates/search.cgi?sHash=2hl0or%2B5jLH35/re3dA9NHS3h80' \
+                -o /usr/local/share/ca-certificates/custom/root.sunot.io.der && \
+            openssl x509 -inform DER \
+                -in /usr/local/share/ca-certificates/custom/root.sunot.io.der \
+                -out /usr/local/share/ca-certificates/custom/root.sunot.io.crt && \
+            curl -fsSL 'http://pki.sunot.io/ejbca/publicweb/certificates/search.cgi?sHash=gSt8ztDa%2BJ6FRhd4RzBPgVG4BZc' \
+                -o /usr/local/share/ca-certificates/custom/sub.sunot.io.der && \
+            openssl x509 -inform DER \
+                -in /usr/local/share/ca-certificates/custom/sub.sunot.io.der \
+                -out /usr/local/share/ca-certificates/custom/sub.sunot.io.crt && \
+            rm /usr/local/share/ca-certificates/custom/*.der && \
+            update-ca-certificates && \
+            for crt in /usr/local/share/ca-certificates/custom/*.crt; do \
+              aliasname=$(basename $crt .crt); \
+              keytool -importcert -trustcacerts -alias $aliasname \
+                      -file $crt -keystore $JAVA_HOME/lib/security/cacerts \
+                      -storepass changeit -noprompt; \
+            done" ]
         {{- include "xwiki.initContainersSecrets" . | nindent 8 }}
       {{- if or .Values.initContainers.database.enabled .Values.initContainers.solr.enabled (and .Values.volumePermissions.enabled .Values.persistence.enabled) }}
         {{- include "xwiki.initContainers" . | nindent 8 }}
